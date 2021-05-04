@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic|Monaco:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chenyaofo.xyz","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="作为程序猿，因为网络原因在天朝使用使用各种包管理器体验一般是不好的。本文整理了一些个人常用的镜像地址及其使用方式，包括Ubuntu的APT，PyPi，Conda，Docker的镜像以及GitHub的反向加速站点。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用镜像地址整理">
+<meta property="og:url" content="http://chenyaofo.xyz/2021/04/03/common-used-mirrors/index.html">
+<meta property="og:site_name" content="chenyaofo&#39;s blog">
+<meta property="og:description" content="作为程序猿，因为网络原因在天朝使用使用各种包管理器体验一般是不好的。本文整理了一些个人常用的镜像地址及其使用方式，包括Ubuntu的APT，PyPi，Conda，Docker的镜像以及GitHub的反向加速站点。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-04-02T17:25:52.000Z">
+<meta property="article:modified_time" content="2021-05-04T08:29:59.145Z">
+<meta property="article:author" content="陈耀佛">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://chenyaofo.xyz/2021/04/03/common-used-mirrors/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>常用镜像地址整理 | chenyaofo's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">chenyaofo's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fa fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-fa fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fa fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/04/03/common-used-mirrors/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="陈耀佛">
+      <meta itemprop="description" content="个人技术博客分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="chenyaofo's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常用镜像地址整理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-03 01:25:52" itemprop="dateCreated datePublished" datetime="2021-04-03T01:25:52+08:00">2021-04-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-04 16:29:59" itemprop="dateModified" datetime="2021-05-04T16:29:59+08:00">2021-05-04</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>作为程序猿，因为网络原因在天朝使用使用各种包管理器体验一般是不好的。本文整理了一些个人常用的镜像地址及其使用方式，包括Ubuntu的APT，PyPi，Conda，Docker的镜像以及GitHub的反向加速站点。</p>
+<span id="more"></span>
+<h2 id="1-ubuntu-apt"><a class="markdownIt-Anchor" href="#1-ubuntu-apt"></a> 1. Ubuntu apt</h2>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/help/ubuntu/">BFSU</a></li>
+<li><a target="_blank" rel="noopener" href="https://opentuna.cn/help/ubuntu/">OpenTUNA</a></li>
+<li><a target="_blank" rel="noopener" href="https://mirrors.cloud.tencent.com/help/ubuntu.html">TencentCloud</a></li>
+</ul>
+<h2 id="2-pypi"><a class="markdownIt-Anchor" href="#2-pypi"></a> 2. PyPi</h2>
+<p>PyPi的镜像可就太多了，随便选一个都挺好用的.</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/help/pypi/">BFSU</a> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install -i https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;pypi&#x2F;web&#x2F;simple &lt;some-package&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><a target="_blank" rel="noopener" href="https://opentuna.cn/help/pypi/">OpenTUNA</a> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install -i https:&#x2F;&#x2F;opentuna.cn&#x2F;pypi&#x2F;web&#x2F;simple &lt;some-package&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><a target="_blank" rel="noopener" href="https://mirrors.cloud.tencent.com/help/pypi.html">TencentCloud</a> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install -i https:&#x2F;&#x2F;mirrors.cloud.tencent.com&#x2F;pypi&#x2F;simple &lt;some-package&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>使用以下命令将镜像设置为默认：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip config set global.index-url https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;pypi&#x2F;web&#x2F;simple</span><br></pre></td></tr></table></figure>
+<h2 id="3-conda"><a class="markdownIt-Anchor" href="#3-conda"></a> 3. Conda</h2>
+<p>Conda因为版权原因，镜像站比较少，最近发现一个北京外国语大学的镜像站（目瞪口呆），速度挺快的，比清华镜像的速度和稳定性要好不少。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/help/anaconda/">BFSU</a><br />
+Anaconda 安装包可以到<a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/anaconda/archive/">这里</a>下载。Miniconda 安装包可以到<a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/anaconda/miniconda/">这里</a>下载。</li>
+</ul>
+<p>使用BFSU镜像可以将<code>~/.condarc</code>修改为以下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">channels:</span><br><span class="line">  - defaults</span><br><span class="line">show_channel_urls: true</span><br><span class="line">default_channels:</span><br><span class="line">  - https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;pkgs&#x2F;main</span><br><span class="line">  - https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;pkgs&#x2F;r</span><br><span class="line">  - https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;pkgs&#x2F;msys2</span><br><span class="line">custom_channels:</span><br><span class="line">  conda-forge: https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;cloud</span><br><span class="line">  msys2: https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;cloud</span><br><span class="line">  bioconda: https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;cloud</span><br><span class="line">  menpo: https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;cloud</span><br><span class="line">  pytorch: https:&#x2F;&#x2F;mirrors.bfsu.edu.cn&#x2F;anaconda&#x2F;cloud</span><br></pre></td></tr></table></figure>
+<p>运行<code>conda clean -i</code>清除索引缓存，保证用的是镜像站提供的索引。</p>
+<h2 id="4-docker"><a class="markdownIt-Anchor" href="#4-docker"></a> 4. Docker</h2>
+<h3 id="41-docker-ce"><a class="markdownIt-Anchor" href="#41-docker-ce"></a> 4.1 Docker CE</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mirrors.bfsu.edu.cn/help/docker-ce/">BFSU</a></li>
+<li><a target="_blank" rel="noopener" href="https://opentuna.cn/help/docker-ce/">OpenTUNA</a></li>
+</ul>
+<h3 id="42-docker-hub"><a class="markdownIt-Anchor" href="#42-docker-hub"></a> 4.2 Docker Hub</h3>
+<p>对于使用 systemd 的系统（Ubuntu 16.04+、Debian 8+、CentOS 7）， 在配置文件 <code>/etc/docker/daemon.json</code> 中加入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;registry-mirrors&quot;: [</span><br><span class="line">    &quot;https:&#x2F;&#x2F;mirror.baidubce.com&quot;,</span><br><span class="line">    &quot;https:&#x2F;&#x2F;hub-mirror.c.163.com&quot;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后重新启动dockerd：<code>sudo systemctl restart docker</code></p>
+<h2 id="5-github-github-release"><a class="markdownIt-Anchor" href="#5-github-github-release"></a> 5. Github &amp;&amp; Github Release</h2>
+<p>对于GitHub来说，下面这些网络应该称为反向代理而不是镜像站。</p>
+<h3 id="51-https-based-clone"><a class="markdownIt-Anchor" href="#51-https-based-clone"></a> 5.1 HTTPS based Clone</h3>
+<ul>
+<li>
+<p><a target="_blank" rel="noopener" href="https://cnpmjs.org/">CNPMJS</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo -&gt; </span><br><span class="line">git clone https:&#x2F;&#x2F;github.com.cnpmjs.org&#x2F;author&#x2F;repo</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p><a target="_blank" rel="noopener" href="https://doc.fastgit.org/zh-cn/guide.html">FastGit</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo -&gt; </span><br><span class="line">git clone https:&#x2F;&#x2F;hub.fastgit.org&#x2F;author&#x2F;repo</span><br></pre></td></tr></table></figure>
+<p>为了方便起见，可以使用以下命令直接使用反向代理地址替代GitHub的地址：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git config --global url.&quot;https:&#x2F;&#x2F;github.com.cnpmjs.org&#x2F;&quot;.insteadOf &quot;https:&#x2F;&#x2F;github.com&#x2F;&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="52-ssh-based-clone"><a class="markdownIt-Anchor" href="#52-ssh-based-clone"></a> 5.2 SSH based Clone</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.zhlh6.cn/">github.zhlh6.cn</a><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git@github.com:author&#x2F;repo.git -&gt; git@git.zhlh6.cn:author&#x2F;repo.git</span><br></pre></td></tr></table></figure>
+原理：利用ucloud提供的GlobalSSH功能，对ssh协议数据进行加速。</li>
+</ul>
+<h3 id="53-release-download"><a class="markdownIt-Anchor" href="#53-release-download"></a> 5.3 Release Download</h3>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://doc.fastgit.org/zh-cn/guide.html">FastGit</a><br />
+<strong>Release</strong>:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo&#x2F;releases&#x2F;download&#x2F;1.0&#x2F;1.0.tar.gz -&gt;</span><br><span class="line">https:&#x2F;&#x2F;download.fastgit.org&#x2F;author&#x2F;repo&#x2F;releases&#x2F;download&#x2F;1.0&#x2F;1.0.tar.gz</span><br></pre></td></tr></table></figure>
+<strong>Codeload</strong>:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo&#x2F;archive&#x2F;master.zip -&gt;</span><br><span class="line">https:&#x2F;&#x2F;download.fastgit.org&#x2F;author&#x2F;repo&#x2F;archive&#x2F;master.zip</span><br></pre></td></tr></table></figure>
+</li>
+<li><a target="_blank" rel="noopener" href="https://github.91chifun.workers.dev/">CloudFlare</a> (github.91chifun.workers.dev)<br />
+<strong>Release</strong>:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo&#x2F;releases&#x2F;download&#x2F;1.0&#x2F;1.0.tar.gz -&gt;</span><br><span class="line">https:&#x2F;&#x2F;github.91chifun.workers.dev&#x2F;https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo&#x2F;releases&#x2F;download&#x2F;1.0&#x2F;1.0.tar.gz</span><br></pre></td></tr></table></figure>
+<strong>Codeload</strong>:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo&#x2F;archive&#x2F;master.zip -&gt;</span><br><span class="line">https:&#x2F;&#x2F;github.91chifun.workers.dev&#x2F;https:&#x2F;&#x2F;github.com&#x2F;author&#x2F;repo&#x2F;archive&#x2F;master.zip</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/28/pytorch-mobile-test-model-inference-time/" rel="prev" title="PyTorch Mobile 模型延迟测试">
+      <i class="fa fa-chevron-left"></i> PyTorch Mobile 模型延迟测试
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/17/install-pytorch-on-server/" rel="next" title="PyTorch深度学习环境搭建">
+      PyTorch深度学习环境搭建 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-ubuntu-apt"><span class="nav-number">1.</span> <span class="nav-text"> 1. Ubuntu apt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-pypi"><span class="nav-number">2.</span> <span class="nav-text"> 2. PyPi</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-conda"><span class="nav-number">3.</span> <span class="nav-text"> 3. Conda</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-docker"><span class="nav-number">4.</span> <span class="nav-text"> 4. Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#41-docker-ce"><span class="nav-number">4.1.</span> <span class="nav-text"> 4.1 Docker CE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#42-docker-hub"><span class="nav-number">4.2.</span> <span class="nav-text"> 4.2 Docker Hub</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-github-github-release"><span class="nav-number">5.</span> <span class="nav-text"> 5. Github &amp;&amp; Github Release</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#51-https-based-clone"><span class="nav-number">5.1.</span> <span class="nav-text"> 5.1 HTTPS based Clone</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#52-ssh-based-clone"><span class="nav-number">5.2.</span> <span class="nav-text"> 5.2 SSH based Clone</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#53-release-download"><span class="nav-number">5.3.</span> <span class="nav-text"> 5.3 Release Download</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">陈耀佛</p>
+  <div class="site-description" itemprop="description">个人技术博客分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chenyaofo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chenyaofo" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:chenyaofo@gmail.com" title="E-Mail → mailto:chenyaofo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陈耀佛</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
