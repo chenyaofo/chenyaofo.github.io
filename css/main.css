@@ -493,6 +493,7 @@ code {
   padding-left: 10px;
   width: 100%;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
   word-wrap: break-word;
 }
 .gist table {
@@ -1215,7 +1216,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #f5ff65;
+  background: #ffa7e4;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
