@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"chenyaofo.xyz","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="现在已经是2021年了，搭建PyTroch环境也是越来越简单了，网上很多教程其实都已经过时了。现在安装PyTorch其实步骤只需要包括两步，1）安装NVIDIA驱动；2）按照PyTorch官网的指示安装PyTorch。本文将以Ubuntu 20.04为例，讲解如何搭建PyTroch环境。">
+  <meta name="description" content="Meltdown又名为恶意数据缓存加载漏洞，其存在于大多数现代处理器中，该漏洞可以使得用户态进程读取内核空间中的内容。本文将对其大致原理进行解读，其中的细节并不会过度涉及，稍有计算机底层基础知识的同学即可放心食用。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="PyTorch深度学习环境搭建">
-<meta property="og:url" content="http://chenyaofo.xyz/2021/04/17/install-pytorch-on-server/index.html">
+<meta property="og:title" content="Meltdown 漏洞">
+<meta property="og:url" content="http://chenyaofo.xyz/2021/05/10/Meltdown/index.html">
 <meta property="og:site_name" content="chenyaofo&#39;s blog">
-<meta property="og:description" content="现在已经是2021年了，搭建PyTroch环境也是越来越简单了，网上很多教程其实都已经过时了。现在安装PyTorch其实步骤只需要包括两步，1）安装NVIDIA驱动；2）按照PyTorch官网的指示安装PyTorch。本文将以Ubuntu 20.04为例，讲解如何搭建PyTroch环境。">
+<meta property="og:description" content="Meltdown又名为恶意数据缓存加载漏洞，其存在于大多数现代处理器中，该漏洞可以使得用户态进程读取内核空间中的内容。本文将对其大致原理进行解读，其中的细节并不会过度涉及，稍有计算机底层基础知识的同学即可放心食用。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-04-16T16:26:22.000Z">
-<meta property="article:modified_time" content="2021-05-04T08:29:47.785Z">
+<meta property="article:published_time" content="2021-05-10T11:25:52.000Z">
+<meta property="article:modified_time" content="2021-05-10T12:10:54.442Z">
 <meta property="article:author" content="陈耀佛">
-<meta property="article:tag" content="PyTorch">
+<meta property="article:tag" content="漏洞">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://chenyaofo.xyz/2021/04/17/install-pytorch-on-server/">
+<link rel="canonical" href="http://chenyaofo.xyz/2021/05/10/Meltdown/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>PyTorch深度学习环境搭建 | chenyaofo's blog</title>
+  <title>Meltdown 漏洞 | chenyaofo's blog</title>
   
 
 
@@ -162,7 +162,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/04/17/install-pytorch-on-server/">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/05/10/Meltdown/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/images/avatar.gif">
@@ -175,7 +175,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          PyTorch深度学习环境搭建
+          Meltdown 漏洞
         </h1>
 
         <div class="post-meta">
@@ -184,16 +184,10 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2021-04-17 00:26:22" itemprop="dateCreated datePublished" datetime="2021-04-17T00:26:22+08:00">2021-04-17</time>
+              <time title="创建时间：2021-05-10 19:25:52 / 修改时间：20:10:54" itemprop="dateCreated datePublished" datetime="2021-05-10T19:25:52+08:00">2021-05-10</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-05-04 16:29:47" itemprop="dateModified" datetime="2021-05-04T16:29:47+08:00">2021-05-04</time>
-              </span>
 
           
 
@@ -206,21 +200,40 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>现在已经是2021年了，搭建PyTroch环境也是越来越简单了，网上很多教程其实都已经过时了。现在安装PyTorch其实步骤只需要包括两步，1）安装NVIDIA驱动；2）按照PyTorch官网的指示安装PyTorch。本文将以Ubuntu 20.04为例，讲解如何搭建PyTroch环境。</p>
+        <p>Meltdown又名为恶意数据缓存加载漏洞，其存在于大多数现代处理器中，该漏洞可以使得用户态进程读取内核空间中的内容。本文将对其大致原理进行解读，其中的细节并不会过度涉及，稍有计算机底层基础知识的同学即可放心食用。</p>
 <span id="more"></span>
-<h2 id="1-安装nvidia驱动"><a class="markdownIt-Anchor" href="#1-安装nvidia驱动"></a> 1. 安装NVIDIA驱动</h2>
-<p>安装NVIDIA驱动有很多方法，可以在官网下载run二进制文件，Ubuntu系统也可以下载驱动的deb包。但是这些方法都比较复杂，最近Ubuntu的官方源就已经加入了NVIDIA的驱动了，直接用apt安装即可，省时省力，方便维护。</p>
-<p>先搜索一下可用的NVIDIA驱动安装包：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-cache search nvidia-driver</span><br></pre></td></tr></table></figure>
-<p>然后会列出所有满足条件的包（为了简洁，下面我省略了一部分输出结果）：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">nvidia-driver-418-server - NVIDIA Server Driver metapackage</span><br><span class="line">nvidia-driver-440-server - Transitional package for nvidia-driver-450-server</span><br><span class="line">nvidia-driver-460-server - NVIDIA Server Driver metapackage</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>挑一个最新的安装即可，因为我是安装在服务器上面，所以选择了包<code>nvidia-driver-460-server</code>。安装成功后需要重启一下，重启之后运行一下<code>nvidia-smi</code>命令，如果没有报错并且成果返回了显卡信息则说明驱动已经安装成果了。</p>
-<h2 id="2-按照pytorch官网的指示安装pytorch"><a class="markdownIt-Anchor" href="#2-按照pytorch官网的指示安装pytorch"></a> 2. 按照PyTorch官网的指示安装PyTorch</h2>
-<p>PyTorch已经内置了CUDA和CuDNN，所以无需在服务器上安装这两个程序了。直接按照PyTorch官网的指令按照对应的版本就可以了。比如我需要装CUDA 11.1版本的PyTorch，命令如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install torch&#x3D;&#x3D;1.8.1+cu111 torchvision&#x3D;&#x3D;0.9.1+cu111 torchaudio&#x3D;&#x3D;0.8.1 \</span><br><span class="line">-f https:&#x2F;&#x2F;download.pytorch.org&#x2F;whl&#x2F;torch_stable.html</span><br></pre></td></tr></table></figure>
-<p>安装完成之后运行以下命令查看是否能使用CUDA进行计算：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c &#39;import torch; print(torch.cuda.is_available())&#39;</span><br></pre></td></tr></table></figure>
-<p>如果返回的结果是<code>True</code>则说明已经安装成功。</p>
+<h2 id="1-背景知识"><a class="markdownIt-Anchor" href="#1-背景知识"></a> 1. 背景知识</h2>
+<p>首先先来回顾一下计算机的基础知识，可以帮助更好地理解Meltdown漏洞。</p>
+<p><strong>乱序执行</strong>（来自维基百科）：</p>
+<blockquote>
+<p>在计算机工程领域，乱序执行（错序执行，英语：out-of-order execution，简称OoOE或OOE）是一种应用在高性能微处理器中来利用指令周期以避免特定类型的延迟消耗的范式。在这种范式中，处理器在一个由输入数据可用性所决定的顺序中执行指令，而不是由程序的原始数据所决定。在这种方式下，可以避免因为获取下一条程序指令所引起的处理器等待，取而代之的处理下一条可以立即执行的指令。</p>
+</blockquote>
+<p>说白了，就是CPU执行指令的时候并不会严格按照顺序执行，只要指令之间没有依赖性，CPU就会尝试去执行当前指令后面的指令。</p>
+<p><strong>CPU缓存</strong>（来自维基百科）：</p>
+<blockquote>
+<p>在计算机系统中，CPU高速缓存（英语：CPU Cache，在本文中简称缓存）是用于减少处理器访问内存所需平均时间的部件。在金字塔式存储体系中它位于自顶向下的第二层，仅次于CPU寄存器。其容量远小于内存，但速度却可以接近处理器的频率。</p>
+</blockquote>
+<p>上面的话可能不是很好懂，在本文中，只需要知道从高速缓存中读取数据和从内存中读取数据的时间差距很大就行了，一般从高速缓存中读取数据仅需要若干个时钟周期，而从内存中读取数据需要上百个时钟周期。</p>
+<p><strong>旁路攻击</strong>（来自维基百科）：</p>
+<blockquote>
+<p>在密码学中，旁道攻击又称侧信道攻击、边信道攻击（英语：Side-channel attack）是一种攻击方式，它基于从密码系统的物理实现中获取的信息而非暴力破解法或是算法中的理论性弱点（较之密码分析）。例如：时间信息、功率消耗、电磁泄露或甚是声音可以提供额外的信息来源，这可被利用于对系统的进一步破解。</p>
+</blockquote>
+<p>这个就有点神奇了，比如本文中的Meltdown漏洞将利用缓存读取的时间信息来破解内核空间的内容。</p>
+<h2 id="meltdown漏洞原理剖析"><a class="markdownIt-Anchor" href="#meltdown漏洞原理剖析"></a> Meltdown漏洞原理剖析</h2>
+<p>首先先明确一下我们想干什么，给定一个内核空间的内存指针<code>ptr</code>，我们希望从用户态进程中读取其内容<code>*ptr</code>。</p>
+<p>我们可以在用户态程序中构造这样的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">raise_exception</span>();</span><br><span class="line"><span class="built_in">access</span>(probe_data[data*<span class="number">4096</span>]); <span class="comment">// data = *ptr</span></span><br></pre></td></tr></table></figure>
+<p>第一行，我们先制造一个异常（随便什么异常，比如被零除之类的）。</p>
+<p>第二行我们会尝试访问<code>probe_data</code>这个数组的某个字节，<code>probe_data</code>是一个很大的数组，其大小至少为<code>256*4096</code>。访问字节的下标为<code>data*4096</code>，而<code>data</code>是内核空间中指针<code>ptr</code>的值。正常来说这一行会内存非法访问的错误，因为用户态进程是没有权限访问内核空间的。</p>
+<p>但是由于在第一行中引发的一个异常，这会导致程序需要暂时进入内核态处理这个异常。最蛋疼的是，因为CPU的乱序执行，导致第二行被执行了，因为这个时候在内核态，一路畅通无阻。过一会，CPU发现下面不能被执行，就是将所有执行的结果抹掉，然后返回用户进程。</p>
+<p>本来一切都没有问题，所有东西都回滚了。但是因为第二行是会访问一个数据的某个字节，根据现代CPU的缓存原理，这个字节会被载入缓存。这个缓存CPU可没有抹掉。因为可以根据这个缓存做文章，得到<code>ptr</code>的内容。</p>
+<p>具体做法如下，之前我们说过了<code>probe_data</code>大小至少为<code>256*4096</code>，因为内存的分页大小一般为<code>4096</code>字节，所以这样就相当于有<code>256</code>个内存分页。然后我们使用下面的代码遍历一遍这<code>256</code>个内存分页：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">for</span> i in <span class="title">range</span><span class="params">(<span class="number">256</span>)</span>:</span></span><br><span class="line"><span class="function">    access(probe_data[i]) // record the access time</span></span><br></pre></td></tr></table></figure>
+<p>因为上述的乱序执行导致了这<code>256</code>个内存分页有某一页的开头被放进了缓存，所以我们只需要记录遍历<code>256</code>个内存分页所需要的时间，其中肯定有一个访问时间远远短于其他的内存分页。那么这个分页对应的索引就是<code>ptr</code>的内容。最终我们通过这种旁路攻击的方式得到了<code>ptr</code>的值。</p>
+<p>这里最重要的就是要保证<code>256</code>个内存分页一开始都不在缓存里面，所以我们将数组<code>probe_data</code>设置的很大。其次<code>ptr</code>是一个<code>char*</code>的指针，所以其只能有256个值，所以我们设置了<code>256</code>个内存分页。</p>
+<p>下面我们使用某种方法将<code>probe_data</code>从缓存中清掉，改变<code>ptr</code>的值，使其指向下一个字节，再重复以上内容就可以从内核空间中取到下一个字节的数据了。</p>
+<p>这个漏洞的构思很巧妙。总的来说，CPU的乱序执行和缓存设计都没有什么问题，但是合在一起却出现了这么个漏洞。<br />
+虽然这个漏洞看起来非常暴力，但是也不是无药可解，为了解决这个问题，Linux上现在提出的解决手段是KPTI（通用技术称为Kaiser），内核和用户态不共享页表，每次你异常、IO、系统调用，都要把内核页表重新装进来。</p>
 
     </div>
 
@@ -230,7 +243,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/PyTorch/" rel="tag"># PyTorch</a>
+              <a href="/tags/%E6%BC%8F%E6%B4%9E/" rel="tag"># 漏洞</a>
           </div>
 
         
@@ -239,13 +252,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/04/03/common-used-mirrors/" rel="prev" title="常用镜像地址整理">
-      <i class="fa fa-chevron-left"></i> 常用镜像地址整理
+    <a href="/2021/04/17/install-pytorch-on-server/" rel="prev" title="PyTorch深度学习环境搭建">
+      <i class="fa fa-chevron-left"></i> PyTorch深度学习环境搭建
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/05/10/Meltdown/" rel="next" title="Meltdown 漏洞">
-      Meltdown 漏洞 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -304,7 +314,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85nvidia%E9%A9%B1%E5%8A%A8"><span class="nav-number">1.</span> <span class="nav-text"> 1. 安装NVIDIA驱动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%8C%89%E7%85%A7pytorch%E5%AE%98%E7%BD%91%E7%9A%84%E6%8C%87%E7%A4%BA%E5%AE%89%E8%A3%85pytorch"><span class="nav-number">2.</span> <span class="nav-text"> 2. 按照PyTorch官网的指示安装PyTorch</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text"> 1. 背景知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#meltdown%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text"> Meltdown漏洞原理剖析</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
