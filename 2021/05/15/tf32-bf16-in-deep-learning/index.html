@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic|Monaco:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chenyaofo.xyz","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="在深度学习中，数值表示是一个常常被忽略的内容，可能从事模型量化领域的研究人员会有所了解，但是大部分的研究人员都对其了解甚少。但是一个设计合理的数值格式能够更好地加速模型训练和推理，在深度学习的工业化和实际落地中是非常重要的。近年来，为了加速深度学习，进一步挖掘硬件的性能，业界发明了一些新的数值格式，如本文中所介绍的TF32和BF16格式。其主要思想是利用深度学习对表示范围敏感而对精度不敏感这一特性">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深度学习中的TF32和BF16格式">
+<meta property="og:url" content="http://chenyaofo.xyz/2021/05/15/tf32-bf16-in-deep-learning/index.html">
+<meta property="og:site_name" content="chenyaofo&#39;s blog">
+<meta property="og:description" content="在深度学习中，数值表示是一个常常被忽略的内容，可能从事模型量化领域的研究人员会有所了解，但是大部分的研究人员都对其了解甚少。但是一个设计合理的数值格式能够更好地加速模型训练和推理，在深度学习的工业化和实际落地中是非常重要的。近年来，为了加速深度学习，进一步挖掘硬件的性能，业界发明了一些新的数值格式，如本文中所介绍的TF32和BF16格式。其主要思想是利用深度学习对表示范围敏感而对精度不敏感这一特性">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blogs.nvidia.com/wp-content/uploads/2020/05/tf32-Mantissa-chart-hi-res-FINAL.png">
+<meta property="article:published_time" content="2021-05-15T01:54:12.000Z">
+<meta property="article:modified_time" content="2021-05-15T03:10:42.527Z">
+<meta property="article:author" content="陈耀佛">
+<meta property="article:tag" content="深度学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blogs.nvidia.com/wp-content/uploads/2020/05/tf32-Mantissa-chart-hi-res-FINAL.png">
+
+<link rel="canonical" href="http://chenyaofo.xyz/2021/05/15/tf32-bf16-in-deep-learning/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>深度学习中的TF32和BF16格式 | chenyaofo's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">chenyaofo's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fa fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-fa fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-fa fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-fa fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fa fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/05/15/tf32-bf16-in-deep-learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/images/avatar.gif">
+      <meta itemprop="name" content="陈耀佛">
+      <meta itemprop="description" content="个人技术博客分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="chenyaofo's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          深度学习中的TF32和BF16格式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-05-15 09:54:12 / 修改时间：11:10:42" itemprop="dateCreated datePublished" datetime="2021-05-15T09:54:12+08:00">2021-05-15</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在深度学习中，数值表示是一个常常被忽略的内容，可能从事模型量化领域的研究人员会有所了解，但是大部分的研究人员都对其了解甚少。但是一个设计合理的数值格式能够更好地加速模型训练和推理，在深度学习的工业化和实际落地中是非常重要的。近年来，为了加速深度学习，进一步挖掘硬件的性能，业界发明了一些新的数值格式，如本文中所介绍的TF32和BF16格式。其主要思想是利用深度学习对表示范围敏感而对精度不敏感这一特性，重新设计浮点数的表示，达到了一个更加好的平衡。</p>
+<span id="more"></span>
+<h2 id="1-单精度浮点数格式fp32背景知识"><a class="markdownIt-Anchor" href="#1-单精度浮点数格式fp32背景知识"></a> 1. 单精度浮点数格式FP32（背景知识）</h2>
+<p>在深度学习中，单精度浮点数格式 FP32 是一种广泛使用的数据格式，其可以表示很大的实数范围，足够深度学习训练和推理中使用。这种格式使用4个 bytes（32bits）表示，其示意图如下。这 32 bits共分为3个部分：</p>
+<ul>
+<li>第一部分为符号位 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathdefault">s</span></span></span></span>，占 1 bit，用来表示正负号；</li>
+<li>第二部分为指数偏移值 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03148em;">k</span></span></span></span>，占 8 bits，用来表示其是2的多少次幂；</li>
+<li>第三部分是分数值 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span></span></span></span>，占 23 bits，用来表示该浮点数的数值大小。</li>
+</ul>
+<p>基于上述表示，浮点数的值可以用以下公式计算：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo stretchy="false">(</mo><mo>−</mo><mn>1</mn><msup><mo stretchy="false">)</mo><mi>s</mi></msup><mo>×</mo><mi>M</mi><mo>×</mo><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">(-1)^s \times M \times 2^k
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">−</span><span class="mord">1</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7143919999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">s</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8991079999999999em;vertical-align:0em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8991079999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span></span></p>
+<p>上述公式隐藏了一些细节，如指数偏移值 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.03148em;">k</span></span></span></span> 使用的时候需要加上一个固定的偏移值，但是这些与本文的主题无关，因此不再赘述了。</p>
+<p>根据上述公式，我们可以计算其可以表示的实数范围为 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>±</mo><mn>1.18</mn><mo>×</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>38</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\pm 1.18 \times 10^{-38}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">±</span><span class="mord">1</span><span class="mord">.</span><span class="mord">1</span><span class="mord">8</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">3</span><span class="mord mtight">8</span></span></span></span></span></span></span></span></span></span></span></span> 至 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>±</mo><mn>3.4</mn><mo>×</mo><mn>1</mn><msup><mn>0</mn><mn>38</mn></msup></mrow><annotation encoding="application/x-tex">\pm 3.4 \times 10^{38}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">±</span><span class="mord">3</span><span class="mord">.</span><span class="mord">4</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">3</span><span class="mord mtight">8</span></span></span></span></span></span></span></span></span></span></span></span>。另外我们还可以得出一些结论，指数偏移值可以决定浮点数的表示范围，而分数值决定浮点数的有效数字位数。</p>
+<p><img src="https://blogs.nvidia.com/wp-content/uploads/2020/05/tf32-Mantissa-chart-hi-res-FINAL.png" alt="" /></p>
+<h2 id="2-tensor-float-32-格式"><a class="markdownIt-Anchor" href="#2-tensor-float-32-格式"></a> 2. Tensor Float 32 格式</h2>
+<p>Tensor Float 32 是 Tensor Core 支持新的数值类型，从 NVIDIA  A100 中开始支持。A100 的普通 FP32 的峰值计算速度为 19.5 TOPs，而TF32的峰值计算速度为 156 TOPs，提升了非常多。</p>
+<p>在深度学习中，其实我们对浮点数的表示范围比较看重，而有效数字不是那么重要。在这个前提下，TF直接就把 FP32 中 23 个分数值截短为 10 bits，而指数位仍为 8 bits，总长度为 19 (=1 + 8 + 10) bits。至于为什么是 10 bits 就够了，那是因为 FP16 就只有 10 bits 用来表示分数值。而在实际测试中，FP16 的精度水平已经足够应对深度学习负载，只是表示的范围不够广而已。</p>
+<p>借助 NVIDIA 开发的深度学习库，用户可以无感地使用 TF32 而无需任何额外的操作。底层库会自动地将 FP32 转换为 TF32 进行计算，并将结果在转换为 FP32。</p>
+<h2 id="3-brain-float-16-格式"><a class="markdownIt-Anchor" href="#3-brain-float-16-格式"></a> 3. Brain Float 16 格式</h2>
+<p>Brain Float 16 格式是 Google 在 TensorFlow 中引入的新数据类型，其可以认为是直接将 FP32 的前16位截取获得的（可以参考<a target="_blank" rel="noopener" href="https://github.com/tensorflow/tensorflow/blob/1e44b15ff02fe3bf4764189eb1b796602d669c3e/tensorflow/core/framework/bfloat16.cc#L20">这里</a>）。至于设计思路和上面的 TF32 是一样的，都是深度学习对表示范围敏感而对精度不敏感。但是 Google 更加暴力，直接将分数值砍到只剩下 7 bits。</p>
+<p>这个格式现在被许多的硬件直接支持了，如最新的Intel CPU （Cooper Lake 及以上）、NVIDIA GPU （Ampere 及以上，如 A100）和 Google TPU v2/v3。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" rel="tag"># 深度学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/10/Meltdown/" rel="prev" title="Meltdown 漏洞">
+      <i class="fa fa-chevron-left"></i> Meltdown 漏洞
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8D%95%E7%B2%BE%E5%BA%A6%E6%B5%AE%E7%82%B9%E6%95%B0%E6%A0%BC%E5%BC%8Ffp32%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text"> 1. 单精度浮点数格式FP32（背景知识）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-tensor-float-32-%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text"> 2. Tensor Float 32 格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-brain-float-16-%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text"> 3. Brain Float 16 格式</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">陈耀佛</p>
+  <div class="site-description" itemprop="description">个人技术博客分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chenyaofo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chenyaofo" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:chenyaofo@gmail.com" title="E-Mail → mailto:chenyaofo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陈耀佛</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/utils.js"></script>
+
+<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/motion.js"></script>
+
+
+<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/schemes/muse.js"></script>
+
+
+<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@0/dist/katex.min.css">
+  <script src="//cdn.jsdelivr.net/npm/katex@0/dist/contrib/copy-tex.min.js"></script>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex@0/dist/contrib/copy-tex.min.css">
+
+
+  
+
+</body>
+</html>
