@@ -20,20 +20,19 @@
     var CONFIG = {"hostname":"chenyaofo.xyz","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="Meltdown又名为恶意数据缓存加载漏洞，其存在于大多数现代处理器中，该漏洞可以使得用户态进程读取内核空间中的内容。本文将对其大致原理进行解读，其中的细节并不会过度涉及，稍有计算机底层基础知识的同学即可放心食用。">
+  <meta name="description" content="第一次听说 Oneflow 是在知乎的一个问题上《如何评价 7 月 31 日一流科技开源的深度学习框架 OneFlow？》，其的口号是主打性能（说实话，当时我是不信的）。当时并没有认真关注这个问题，因为国产的深度学习框架开源也不是一个两个了，比如清华的 Jittor，旷视的 MegEngine，华为的 Mindspore和百度的 PaddlePaddle。不关注的原因是因为这些框架都是为了公司内部">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Meltdown 漏洞">
-<meta property="og:url" content="http://chenyaofo.xyz/2021/05/10/Meltdown/index.html">
+<meta property="og:title" content="初识 Oneflow">
+<meta property="og:url" content="http://chenyaofo.xyz/2021/05/17/oneflow-introduction/index.html">
 <meta property="og:site_name" content="chenyaofo&#39;s blog">
-<meta property="og:description" content="Meltdown又名为恶意数据缓存加载漏洞，其存在于大多数现代处理器中，该漏洞可以使得用户态进程读取内核空间中的内容。本文将对其大致原理进行解读，其中的细节并不会过度涉及，稍有计算机底层基础知识的同学即可放心食用。">
+<meta property="og:description" content="第一次听说 Oneflow 是在知乎的一个问题上《如何评价 7 月 31 日一流科技开源的深度学习框架 OneFlow？》，其的口号是主打性能（说实话，当时我是不信的）。当时并没有认真关注这个问题，因为国产的深度学习框架开源也不是一个两个了，比如清华的 Jittor，旷视的 MegEngine，华为的 Mindspore和百度的 PaddlePaddle。不关注的原因是因为这些框架都是为了公司内部">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-05-10T11:25:52.000Z">
-<meta property="article:modified_time" content="2021-05-10T14:19:23.947Z">
+<meta property="article:published_time" content="2021-05-17T13:41:45.000Z">
+<meta property="article:modified_time" content="2021-05-17T15:36:37.648Z">
 <meta property="article:author" content="陈耀佛">
-<meta property="article:tag" content="漏洞">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://chenyaofo.xyz/2021/05/10/Meltdown/">
+<link rel="canonical" href="http://chenyaofo.xyz/2021/05/17/oneflow-introduction/">
 
 
 <script id="page-configurations">
@@ -46,7 +45,7 @@
   };
 </script>
 
-  <title>Meltdown 漏洞 | chenyaofo's blog</title>
+  <title>初识 Oneflow | chenyaofo's blog</title>
   
 
 
@@ -162,7 +161,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/05/10/Meltdown/">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/05/17/oneflow-introduction/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/images/avatar.gif">
@@ -175,7 +174,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Meltdown 漏洞
+          初识 Oneflow
         </h1>
 
         <div class="post-meta">
@@ -186,7 +185,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-05-10 19:25:52 / 修改时间：22:19:23" itemprop="dateCreated datePublished" datetime="2021-05-10T19:25:52+08:00">2021-05-10</time>
+              <time title="创建时间：2021-05-17 21:41:45 / 修改时间：23:36:37" itemprop="dateCreated datePublished" datetime="2021-05-17T21:41:45+08:00">2021-05-17</time>
             </span>
 
           
@@ -200,39 +199,142 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>Meltdown又名为恶意数据缓存加载漏洞，其存在于大多数现代处理器中，该漏洞可以使得用户态进程读取内核空间中的内容。本文将对其大致原理进行解读，其中的细节并不会过度涉及，稍有计算机底层基础知识的同学即可放心食用。</p>
+        <p>第一次听说 Oneflow 是在知乎的一个问题上<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/409036335">《如何评价 7 月 31 日一流科技开源的深度学习框架 OneFlow？》</a>，其的口号是主打性能（说实话，当时我是不信的）。当时并没有认真关注这个问题，因为国产的深度学习框架开源也不是一个两个了，比如清华的 Jittor，旷视的 MegEngine，华为的 Mindspore和百度的 PaddlePaddle。不关注的原因是因为这些框架都是为了公司内部的需求而首先设计的，之后再开源的，感觉可能不是很符合科研需求；另外已经熟悉了 PyTorch 的 API 和生态了，再转到另一个框架太麻烦也没有必要。最近，Oneflow 宣布其会兼容 PyTorch 的 API，并且放出了其性能测试报告（真香），一下子就让我有了兴趣，毕竟白嫖的性能谁不喜欢呢。本文主要是 Oneflow 官方发布的 Benchmark 和 介绍的搬运，后面等到放出与 PyTorch 兼容的新版本后会上手体验一下。</p>
 <span id="more"></span>
-<h2 id="1-背景知识"><a class="markdownIt-Anchor" href="#1-背景知识"></a> 1. 背景知识</h2>
-<p>首先先来回顾一下计算机的基础知识，可以帮助更好地理解Meltdown漏洞。</p>
-<p><strong>乱序执行</strong>（来自维基百科）：</p>
-<blockquote>
-<p>在计算机工程领域，乱序执行（错序执行，英语：out-of-order execution，简称OoOE或OOE）是一种应用在高性能微处理器中来利用指令周期以避免特定类型的延迟消耗的范式。在这种范式中，处理器在一个由输入数据可用性所决定的顺序中执行指令，而不是由程序的原始数据所决定。在这种方式下，可以避免因为获取下一条程序指令所引起的处理器等待，取而代之的处理下一条可以立即执行的指令。</p>
-</blockquote>
-<p>说白了，就是CPU执行指令的时候并不会严格按照顺序执行，只要指令之间没有依赖性，CPU就会尝试去执行当前指令后面的指令。</p>
-<p><strong>CPU缓存</strong>（来自维基百科）：</p>
-<blockquote>
-<p>在计算机系统中，CPU高速缓存（英语：CPU Cache，在本文中简称缓存）是用于减少处理器访问内存所需平均时间的部件。在金字塔式存储体系中它位于自顶向下的第二层，仅次于CPU寄存器。其容量远小于内存，但速度却可以接近处理器的频率。</p>
-</blockquote>
-<p>上面的话可能不是很好懂，在本文中，只需要知道从高速缓存中读取数据和从内存中读取数据的时间差距很大就行了，一般从高速缓存中读取数据仅需要若干个时钟周期，而从内存中读取数据需要上百个时钟周期。</p>
-<p><strong>旁路攻击</strong>（来自维基百科）：</p>
-<blockquote>
-<p>在密码学中，旁道攻击又称侧信道攻击、边信道攻击（英语：Side-channel attack）是一种攻击方式，它基于从密码系统的物理实现中获取的信息而非暴力破解法或是算法中的理论性弱点（较之密码分析）。例如：时间信息、功率消耗、电磁泄露或甚是声音可以提供额外的信息来源，这可被利用于对系统的进一步破解。</p>
-</blockquote>
-<p>这个就有点神奇了，比如本文中的Meltdown漏洞将利用缓存读取的时间信息来破解内核空间的内容。</p>
-<h2 id="meltdown漏洞原理剖析"><a class="markdownIt-Anchor" href="#meltdown漏洞原理剖析"></a> Meltdown漏洞原理剖析</h2>
-<p>首先先明确一下我们想干什么：给定一个内核空间的内存指针<code>ptr</code>，我们希望从用户态进程中读取其内容<code>*ptr</code>。</p>
-<p>为了实现这一目的，我们可以在用户态程序中构造这样的代码：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">raise_exception</span>();</span><br><span class="line"><span class="built_in">access</span>(probe_data[data*<span class="number">4096</span>]); <span class="comment">// data = *ptr</span></span><br></pre></td></tr></table></figure>
-<p>第一行，我们先制造一个异常（随便什么异常，比如被零除之类的）。</p>
-<p>第二行我们会尝试访问<code>probe_data</code>这个数组的某个字节，<code>probe_data</code>是一个很大的数组，其大小至少为<code>256*4096</code>。访问字节的下标为<code>data*4096</code>，而<code>data</code>是内核空间中指针<code>ptr</code>的值。正常来说这一行代码会产生内存非法访问的错误，因为用户态进程是没有权限访问内核空间的。</p>
-<p>但是由于在第一行中引发的一个异常，这会导致程序需要暂时进入内核态处理这个异常。最蛋疼的是，因为CPU的乱序执行，导致第二行被执行了，因为这个时候在内核态，可以正常读取指针<code>ptr</code>的内容，并不会发生内存非法访问的问题。之后CPU发现第二行代码不应该被执行，将所有执行的结果都回滚，然后返回用户进程。</p>
-<p>本来一切都没有问题，所有东西都回滚了。但是因为第二行是会访问数组<code>probe_data</code>的某个字节，根据现代CPU的缓存原理，这个字节（严格来说，是包括其前后的某些字节构成的缓存行）会被载入缓存，这个缓存CPU可没有令其回滚。这就可以进行旁路攻击，我们可以根据这个缓存做文章，得到<code>ptr</code>的内容。</p>
-<p>具体做法如下，之前我们说过了<code>probe_data</code>大小至少为<code>256*4096</code>，因为内存的分页大小一般为<code>4096</code>字节，所以这样就相当于有<code>256</code>个内存分页。然后我们使用下面的代码遍历一遍这<code>256</code>个内存分页：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">for</span> i in <span class="title">range</span><span class="params">(<span class="number">256</span>)</span></span>&#123;</span><br><span class="line">    <span class="built_in">access</span>(probe_data[i]); <span class="comment">// record the access time</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>因为上述的第二行代码被乱序执行导致了这<code>256</code>个内存分页有某一页的开头被载入缓存，所以我们只需要记录遍历<code>256</code>个内存分页所需要的时间，其中肯定有一个访问时间远远短于其他的内存分页。那么这个分页对应的索引就是<code>ptr</code>的内容。最终我们通过这种旁路攻击的方式得到了<code>ptr</code>的值。</p>
-<p>这里最重要的就是要保证<code>256</code>个内存分页一开始都不在缓存里面，所以我们将数组<code>probe_data</code>设置的很大。其次<code>ptr</code>是一个<code>char*</code>的指针，所以其只能有256个值，所以我们设置了<code>256</code>个内存分页。</p>
-<p>下面我们使用某种方法将<code>probe_data</code>从缓存中清掉，改变<code>ptr</code>的值，使其指向下一个字节，再重复以上内容就可以从内核空间中取到下一个字节的数据了。</p>
-<p>这个漏洞的构思很巧妙，CPU的乱序执行和缓存设计都没有什么问题，但是合在一起却出现了这么个漏洞。现有的CPU的操作系统大都不能抵御这种漏洞，操作系统进行更新后通过重新设计应该可以抵御，但是可能会损失一些性能。</p>
+<h2 id="框架性能横评"><a class="markdownIt-Anchor" href="#框架性能横评"></a> 框架性能横评</h2>
+<p>Oneflow 既然主打性能，那肯定要凭数据说话的。为了证明 Oneflow 对比其他框架在性能上的优越性，其在官方仓库 <a target="_blank" rel="noopener" href="https://github.com/Oneflow-Inc/DLPerf">Oneflow-Inc/DLPerf</a> 放出了<a target="_blank" rel="noopener" href="https://github.com/Oneflow-Inc/DLPerf/blob/master/reports/dlperf_benchmark_test_report_v1_cn.md">《基于ResNet50与BERT模型的深度学习框架性能评测报告》</a>。下面我挑重点说一下，感兴趣可以去阅读原报告。</p>
+<p>首先是在 ResNet50 上的性能结果对比，Oneflow 对比了几大主流的深度学习框架，包括 Tensorflow、PyTorch、MXNet和PaddlePaddle。其中 Tensorflow、PyTorch、MXNet 三者均有 <a target="_blank" rel="noopener" href="https://ngc.nvidia.com/">NGC 版本</a>，这个版本主要是配备了 <a target="_blank" rel="noopener" href="https://github.com/NVIDIA/DALI">DALI</a> 这个数据加速读取的库，能够极大地加速数据读取速度，另外还有一些其他优化，可以在官网了解更多细节。下表中展示了不同框架使用 ResNet50 在图片分类上的吞吐率（batch size为256，并且使用了自动混合精度）。</p>
+<table>
+<thead>
+<tr>
+<th>#node</th>
+<th>#device</th>
+<th>OneFlow</th>
+<th>NGC MXNet</th>
+<th>NGC TensorFlow 1.x w/XLA</th>
+<th>NGC TensorFlow 1.x</th>
+<th>NGC PyTorch</th>
+<th>MXNet</th>
+<th>TensorFlow 2.x</th>
+<th>PaddlePaddle w/DALI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td><strong>1472.72</strong></td>
+<td>1393.87</td>
+<td>1198.55</td>
+<td>945.18</td>
+<td>802.9</td>
+<td>833.65</td>
+<td>1075.27</td>
+<td>887.17</td>
+</tr>
+<tr>
+<td>1</td>
+<td>8</td>
+<td><strong>10629.32</strong></td>
+<td>9621.31</td>
+<td>8588.45</td>
+<td>6903.42</td>
+<td>6154.66</td>
+<td>2908.88</td>
+<td>6898.00</td>
+<td>6862.17</td>
+</tr>
+<tr>
+<td>2</td>
+<td>16</td>
+<td><strong>17920.40</strong></td>
+<td>16219.03</td>
+<td>14931.03</td>
+<td>12021.09</td>
+<td>11991.94</td>
+<td>5451.27</td>
+<td>9870.15</td>
+<td>6018.46</td>
+</tr>
+<tr>
+<td>4</td>
+<td>32</td>
+<td><strong>33141.02</strong></td>
+<td>30713.68</td>
+<td>29171.69</td>
+<td>24734.22</td>
+<td>22551.16</td>
+<td>10565.55</td>
+<td>19314.31</td>
+<td>11617.57</td>
+</tr>
+</tbody>
+</table>
+<p>首先看一下单卡的结果，除了 NGC MXNet 能够看到 Oneflow 的车尾灯，其他框架都被甩了一条街。普通的 MXNet 没了 DALI 之后吞吐率也是暴跌，说明数据读取是个大的瓶颈。<br />
+然后看一下单机8卡的结果，从绝对吞吐率来说，Oneflow 依然是一枝独秀，吊打其他框架。从加速比上看，Oneflow 达到了 7.2（8卡），已经非常不错了。但是低于 PaddlePaddle 的 7.73（8卡），我怀疑 PaddlePaddle 就是捣乱的，单卡太差了，有着极大的上升空间；和 NGC Tensorflow 的 7.16（8卡）旗鼓相当。<br />
+最后直接看4机32卡，绝对吞吐率已经没有什么好看了，依旧是第一。主要关注加速比，Oneflow 是 22.51（32卡），低于 NGC PyTorch 的28.11（32卡），这个就有点低了，期待后续的优化吧。</p>
+<p>除了 ResNet50 网络，Oneflow 在 BERT 网络上对比了其他框架（batch size开到最大，开启自动混合精度），结果见下表。对比下来，绝对吞吐率依然遥遥领先，加速比分别为 7.24（8卡），25.99（32卡），和 ResNet50 上的结论类似：单卡已经做的很好了，但是多卡加速比（尤其是大于8卡）仍有提高空间。另外一点，就是 Oneflow 能够支持的 batch size 比其他框架大很多，达到了 160，远超第二名 NGC Tensorflow 1.x 的 96。这一点对于小实验室很重要，因为 Oneflow 框架非常节省显存。</p>
+<table>
+<thead>
+<tr>
+<th>#node</th>
+<th>#device</th>
+<th>OneFlow bsz=160</th>
+<th>NGC TensorFlow 1.x W/O XLA bsz=64</th>
+<th>NGC TensorFlow 1.x with XLA bsz=96</th>
+<th>NGC PyTorch bsz=96</th>
+<th>PaddlePaddle bsz=160</th>
+<th>OneFlow W/O clip bsz=160</th>
+<th>MXNet W/O clip bsz=128</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td><strong>605.11</strong></td>
+<td>183.25</td>
+<td>468.10</td>
+<td>462.35</td>
+<td>309.68</td>
+<td>613.93</td>
+<td>544.31</td>
+</tr>
+<tr>
+<td>1</td>
+<td>8</td>
+<td><strong>4381.66</strong></td>
+<td>1452.59</td>
+<td>3559.8</td>
+<td>3287.12</td>
+<td>1666.54</td>
+<td>4683.36</td>
+<td>3825.21</td>
+</tr>
+<tr>
+<td>2</td>
+<td>16</td>
+<td><strong>8075.16</strong></td>
+<td>2653.74</td>
+<td>5960.14</td>
+<td>5426.07</td>
+<td>2969.85</td>
+<td>8777.57</td>
+<td>7327.50</td>
+</tr>
+<tr>
+<td>4</td>
+<td>32</td>
+<td><strong>15724.70</strong></td>
+<td>5189.07</td>
+<td>11650.0</td>
+<td>10349.12</td>
+<td>5452.35</td>
+<td>17210.63</td>
+<td>14822.31</td>
+</tr>
+</tbody>
+</table>
 
     </div>
 
@@ -241,9 +343,6 @@
     
 
       <footer class="post-footer">
-          <div class="post-tags">
-              <a href="/tags/%E6%BC%8F%E6%B4%9E/" rel="tag"># 漏洞</a>
-          </div>
 
         
 
@@ -251,13 +350,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/04/17/install-pytorch-on-server/" rel="prev" title="PyTorch深度学习环境搭建">
-      <i class="fa fa-chevron-left"></i> PyTorch深度学习环境搭建
+    <a href="/2021/05/17/ring-allreduce/" rel="prev" title="深度学习中的 Ring Allreduce 算法">
+      <i class="fa fa-chevron-left"></i> 深度学习中的 Ring Allreduce 算法
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/05/15/tf32-bf16-in-deep-learning/" rel="next" title="深度学习中的TF32和BF16格式">
-      深度学习中的TF32和BF16格式 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -316,7 +412,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text"> 1. 背景知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#meltdown%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text"> Meltdown漏洞原理剖析</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A1%86%E6%9E%B6%E6%80%A7%E8%83%BD%E6%A8%AA%E8%AF%84"><span class="nav-number">1.</span> <span class="nav-text"> 框架性能横评</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
