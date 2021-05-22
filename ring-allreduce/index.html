@@ -10,31 +10,36 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
   <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/css/main.css">
+<link rel="stylesheet" href="/css//main.css">
 
 <link rel="stylesheet" href="https://fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic|Monaco:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"chenyaofo.xyz","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"chenyaofo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="随着深度学习模型参数量越来越大，如何使用多卡并行训练模型加速训练是机器学习系统需要考虑和优化的重点。多卡并行训练涉及到多张卡上的模型参数和梯度汇聚和分发，而多卡之间的通信带宽往往是有限的，如何设计一个高效的汇聚和分发算法最大化地利用这些通信带宽以提升训练效率是一个值得研究的问题。本文将从最为简单的多卡训练模型出发并分析其缺点，然后再介绍一种名为 Ring Allreduce 的算法是如何解决这些缺">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深度学习中的 Ring Allreduce 算法">
-<meta property="og:url" content="http://chenyaofo.xyz/2021/05/17/ring-allreduce/index.html">
+<meta property="og:url" content="http://chenyaofo.com/ring-allreduce/index.html">
 <meta property="og:site_name" content="chenyaofo&#39;s blog">
 <meta property="og:description" content="随着深度学习模型参数量越来越大，如何使用多卡并行训练模型加速训练是机器学习系统需要考虑和优化的重点。多卡并行训练涉及到多张卡上的模型参数和梯度汇聚和分发，而多卡之间的通信带宽往往是有限的，如何设计一个高效的汇聚和分发算法最大化地利用这些通信带宽以提升训练效率是一个值得研究的问题。本文将从最为简单的多卡训练模型出发并分析其缺点，然后再介绍一种名为 Ring Allreduce 的算法是如何解决这些缺">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-22-15-33-17.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-22-15-36-53.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-22-17-06-31.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-22-17-16-55.png">
 <meta property="article:published_time" content="2021-05-17T08:37:51.000Z">
-<meta property="article:modified_time" content="2021-05-17T12:26:45.569Z">
+<meta property="article:modified_time" content="2021-05-22T09:17:30.737Z">
 <meta property="article:author" content="陈耀佛">
 <meta property="article:tag" content="深度学习">
 <meta property="article:tag" content="MLSys">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://assets.chenyaofo.com/2021-05-22-15-33-17.png">
 
-<link rel="canonical" href="http://chenyaofo.xyz/2021/05/17/ring-allreduce/">
+<link rel="canonical" href="http://chenyaofo.com/ring-allreduce/">
 
 
 <script id="page-configurations">
@@ -163,10 +168,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/05/17/ring-allreduce/">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.com/ring-allreduce/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="陈耀佛">
       <meta itemprop="description" content="个人技术博客分享">
     </span>
@@ -185,10 +190,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-05-17 16:37:51 / 修改时间：20:26:45" itemprop="dateCreated datePublished" datetime="2021-05-17T16:37:51+08:00">2021-05-17</time>
+              <time title="创建时间：2021-05-17 16:37:51" itemprop="dateCreated datePublished" datetime="2021-05-17T16:37:51+08:00">2021-05-17</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-22 17:17:30" itemprop="dateModified" datetime="2021-05-22T17:17:30+08:00">2021-05-22</time>
+              </span>
 
           
 
@@ -205,6 +216,7 @@
 <span id="more"></span>
 <h2 id="1-传统多卡并行"><a class="markdownIt-Anchor" href="#1-传统多卡并行"></a> 1. 传统多卡并行</h2>
 <p>假设我们使用 N 张 GPU 进行并行训练，每张 GPU 上的模型梯度大小为 K。在深度学习训练中，我们需要求所有 GPU 上模型梯度的平均值再利用梯度下降算法进行训练。为了实现这一目的，最简单的并行方式就是我们指定一张 GPU 为 master GPU（为了方便讨论，这里指定为 GPU 0），其余的 GPU 为 slave GPU。在模型的反向传播后，将每张 GPU 上的梯度在 master GPU 上进行汇聚（在这里就是求平均值），然后将梯度的汇聚结果从 master GPU 上发送到其余的 slave GPU。具体过程如下图所示：</p>
+<p><img src="https://assets.chenyaofo.com/2021-05-22-15-33-17.png" alt="" /></p>
 <p>这里，我们计算一下每张 GPU 上需要发送和接收的数据量大小：</p>
 <ul>
 <li>对于 master GPU（这里是 GPU 0）：
@@ -227,10 +239,19 @@
 <p>PyTorch 中的 <code>torch.nn.DataParallel</code> 就是采样这一方式在 GPU 间汇聚和发送梯度的，因此在GPU 数量较多的情况下其加速比会远低于 N。</p>
 <h2 id="2-ring-allreduce-多卡并行"><a class="markdownIt-Anchor" href="#2-ring-allreduce-多卡并行"></a> 2. Ring Allreduce 多卡并行</h2>
 <p>为了解决上面两个缺点，在2017年，百度引入了高性能计算领域中著名的 Ring Allreduce 算法，其能够平均每张 GPU 的通信量和工作量。在该算法中，所有 GPU 将组成一个环，每个 GPU 都有其左邻居 GPU 和 右邻居 GPU（如下图所示）。算法共包括两个不同的步骤，分别为 scatter-reduce 步骤 和 allgather 步骤，下面将会对这两个步骤进行阐述。</p>
+<div  align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-22-15-36-53.png" width="50%" height="50%"/>
+</div>
 <p><strong>scatter-reduce 步骤</strong></p>
 <p>为了保证每个 GPU 通信量和工作量尽可能相等，模型的参数首先被划分为大小相等的 N 个数据块，然后将每一数据块通过 N-1 次数据传输将其汇聚到一个 GPU 上。具体算法如下，在每次数据传输中，每块 GPU 将向其右邻居发送一个数据块，并从其左邻居接收一个数据块并进行汇聚操作（如下图所示）。</p>
+<div  align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-22-17-06-31.png" width="100%"/>
+</div>
 <p><strong>allgather 步骤</strong></p>
 <p>在完成 scatter-reduce 后，每块 GPU 上都有一个数据块已经汇聚完其余所有 GPU 上的值（即上图中最后一步中每个 GPU 中的黄色数据块）。接下来我们进行 allgather 步骤将这些黄色数据库发送到其他 GPU 上，总计也需要 N-1 次数据传输。具体做法和上述 scatter-reduce 步骤是非常相似的，每块 GPU 将向其右邻居发送一个数据块，并从其左邻居接收一个数据块并覆盖当前 GPU 对应的数据块（如下图所示）。</p>
+<div  align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-22-17-16-55.png" width="100%"/>
+</div>
 <p>下面我们计算一下每块 GPU 的通信量，在 Ring Allreduce 算法中每块 GPU 都是对等的，因此每块 GPU 的通信量大小都是一样的：</p>
 <ul>
 <li>scatter-reduce 步骤：每块 GPU 从左邻居接收 K/N 的数据，向其右邻居发送 K/N 的数据，重复 N-1 次。</li>
@@ -262,11 +283,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/05/15/tf32-bf16-in-deep-learning/" rel="prev" title="深度学习中的TF32和BF16格式">
+    <a href="/tf32-bf16-in-deep-learning/" rel="prev" title="深度学习中的TF32和BF16格式">
       <i class="fa fa-chevron-left"></i> 深度学习中的TF32和BF16格式
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/05/17/oneflow-introduction/" rel="next" title="初识 Oneflow">
+    <a href="/oneflow-introduction/" rel="next" title="初识 Oneflow">
       初识 Oneflow <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -348,7 +369,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -393,7 +414,7 @@
   </span>
   <span class="author" itemprop="copyrightHolder">陈耀佛</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
         
@@ -414,15 +435,15 @@
   <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
 
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/utils.js"></script>
+<script src="/js/utils.js"></script>
 
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/motion.js"></script>
-
-
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/schemes/muse.js"></script>
+<script src="/js/motion.js"></script>
 
 
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/next-boot.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
 
 
 

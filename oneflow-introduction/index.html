@@ -10,20 +10,20 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
   <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/css/main.css">
+<link rel="stylesheet" href="/css//main.css">
 
 <link rel="stylesheet" href="https://fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic|Monaco:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"chenyaofo.xyz","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"chenyaofo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="第一次听说 Oneflow 是在知乎的一个问题上《如何评价 7 月 31 日一流科技开源的深度学习框架 OneFlow？》，其的口号是主打性能（说实话，当时我是不信的）。当时并没有认真关注这个问题，因为国产的深度学习框架开源也不是一个两个了，比如清华的 Jittor，旷视的 MegEngine，华为的 Mindspore和百度的 PaddlePaddle。不关注的原因是因为这些框架都是为了公司内部">
 <meta property="og:type" content="article">
 <meta property="og:title" content="初识 Oneflow">
-<meta property="og:url" content="http://chenyaofo.xyz/2021/05/17/oneflow-introduction/index.html">
+<meta property="og:url" content="http://chenyaofo.com/oneflow-introduction/index.html">
 <meta property="og:site_name" content="chenyaofo&#39;s blog">
 <meta property="og:description" content="第一次听说 Oneflow 是在知乎的一个问题上《如何评价 7 月 31 日一流科技开源的深度学习框架 OneFlow？》，其的口号是主打性能（说实话，当时我是不信的）。当时并没有认真关注这个问题，因为国产的深度学习框架开源也不是一个两个了，比如清华的 Jittor，旷视的 MegEngine，华为的 Mindspore和百度的 PaddlePaddle。不关注的原因是因为这些框架都是为了公司内部">
 <meta property="og:locale" content="zh_CN">
@@ -32,7 +32,7 @@
 <meta property="article:author" content="陈耀佛">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://chenyaofo.xyz/2021/05/17/oneflow-introduction/">
+<link rel="canonical" href="http://chenyaofo.com/oneflow-introduction/">
 
 
 <script id="page-configurations">
@@ -161,10 +161,10 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://chenyaofo.xyz/2021/05/17/oneflow-introduction/">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.com/oneflow-introduction/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.gif">
       <meta itemprop="name" content="陈耀佛">
       <meta itemprop="description" content="个人技术博客分享">
     </span>
@@ -350,7 +350,7 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/05/17/ring-allreduce/" rel="prev" title="深度学习中的 Ring Allreduce 算法">
+    <a href="/ring-allreduce/" rel="prev" title="深度学习中的 Ring Allreduce 算法">
       <i class="fa fa-chevron-left"></i> 深度学习中的 Ring Allreduce 算法
     </a></div>
       <div class="post-nav-item"></div>
@@ -433,7 +433,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -478,7 +478,7 @@
   </span>
   <span class="author" itemprop="copyrightHolder">陈耀佛</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 
         
@@ -499,15 +499,15 @@
   <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
 
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/utils.js"></script>
+<script src="/js/utils.js"></script>
 
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/motion.js"></script>
-
-
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/schemes/muse.js"></script>
+<script src="/js/motion.js"></script>
 
 
-<script src="//cdn.jsdelivr.net/gh/chenyaofo/chenyaofo.github.io@main/js/next-boot.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
 
 
 
