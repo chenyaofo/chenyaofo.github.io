@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css//main.css">
+
+<link rel="stylesheet" href="https://fonts.loli.net/css?family=Lato:300,300italic,400,400italic,700,700italic|Monaco:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chenyaofo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="图床一直是个人博客一个很头痛的问题，第三方的图床我一直不敢用，怕哪一天就宣布停止运营了然后让用户迁移数据。有很多博客也会采用 Github 仓库存储图片然后再利用 jsdelivr 作为 CDN 加速访问。但是 jsdelivr 最近更新的使用政策中规定禁止使用 jsdelivr 加速图片。现在只是有这个声明，实际上可能不会管，但是以后的事可能就说不好了，万一哪天就直接限制图片访问次数就直接 GG">
+<meta property="og:type" content="article">
+<meta property="og:title" content="白嫖 Backblaze 对象存储打造图床">
+<meta property="og:url" content="http://chenyaofo.com/backblaze-oss-image-host/index.html">
+<meta property="og:site_name" content="chenyaofo&#39;s blog">
+<meta property="og:description" content="图床一直是个人博客一个很头痛的问题，第三方的图床我一直不敢用，怕哪一天就宣布停止运营了然后让用户迁移数据。有很多博客也会采用 Github 仓库存储图片然后再利用 jsdelivr 作为 CDN 加速访问。但是 jsdelivr 最近更新的使用政策中规定禁止使用 jsdelivr 加速图片。现在只是有这个声明，实际上可能不会管，但是以后的事可能就说不好了，万一哪天就直接限制图片访问次数就直接 GG">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-11-50-21.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-11-53-36.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-11-56-10.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-12-04-15.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-15-34-54.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-15-37-14.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-15-39-45.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-15-47-53.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-15-49-08.png">
+<meta property="og:image" content="https://assets.chenyaofo.com/2021-05-31-15-58-50.png">
+<meta property="article:published_time" content="2021-05-23T01:58:18.000Z">
+<meta property="article:modified_time" content="2021-05-31T08:07:35.151Z">
+<meta property="article:author" content="陈耀佛">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://assets.chenyaofo.com/2021-05-31-11-50-21.png">
+
+<link rel="canonical" href="http://chenyaofo.com/backblaze-oss-image-host/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>白嫖 Backblaze 对象存储打造图床 | chenyaofo's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">chenyaofo's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-fa fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-fa fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-fa fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-fa fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-fa fa-user"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://chenyaofo.com/backblaze-oss-image-host/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="陈耀佛">
+      <meta itemprop="description" content="个人技术博客分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="chenyaofo's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          白嫖 Backblaze 对象存储打造图床
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-23 09:58:18" itemprop="dateCreated datePublished" datetime="2021-05-23T09:58:18+08:00">2021-05-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-31 16:07:35" itemprop="dateModified" datetime="2021-05-31T16:07:35+08:00">2021-05-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>图床一直是个人博客一个很头痛的问题，第三方的图床我一直不敢用，怕哪一天就宣布停止运营了然后让用户迁移数据。有很多博客也会采用 Github 仓库存储图片然后再利用 jsdelivr 作为 CDN 加速访问。但是 jsdelivr 最近更新的<a target="_blank" rel="noopener" href="https://www.jsdelivr.com/terms/acceptable-use-policy-jsdelivr-net">使用政策</a>中规定禁止使用 jsdelivr 加速图片。现在只是有这个声明，实际上可能不会管，但是以后的事可能就说不好了，万一哪天就直接限制图片访问次数就直接 GG 了。经过一番探索，发现了国外的一个很棒的云存储 Backblaze 可以满足作为个人博客的图床需求，本文主要讲讲如何利用 Backblaze 的对象存储和 Cloudflare 免费的 CDN 打造一个私人图床。</p>
+<span id="more"></span>
+<h2 id="1-backblaze-简介"><a class="markdownIt-Anchor" href="#1-backblaze-简介"></a> 1. BackBlaze 简介</h2>
+<p><a target="_blank" rel="noopener" href="https://www.backblaze.com/">BackBlaze</a> 成立于2017年，是一家云存储和个人数据备份公司，其有 4 个数据中心，其中 3 个在美国，1 个在欧洲。BackBlaze 提供对象存储服务，对于个人博客来说，有着以下优点：</p>
+<ul>
+<li><strong>免备案</strong>：这个优点是最大的，国内的备案真的太麻烦了。</li>
+<li><strong>费用低</strong>：BackBlaze 的每 GB 的存储费用是 $0.005，每 GB 的下行费用是 $0.01，根据<a target="_blank" rel="noopener" href="https://www.backblaze.com/b2/cloud-storage.html">官网的对比</a>，要比亚马逊、谷歌云等便宜得多。而且，BackBlaze 还白送 10 GB 存储空间！</li>
+<li><strong>流量免费</strong>：BackBlaze 和 Cloudflare 同属一个带宽联盟，因为可以利用 Cloudflare 的 CDN 免费分发，免去传输费用。</li>
+</ul>
+<p>我们到底要怎么样白嫖出一个图床呢？下面我们先进行一下费用分析，一般对象存储的费用可以分为3个部分：</p>
+<ul>
+<li><strong>存储费用</strong>：BackBlaze 免费送 10 GB 空间，超过部分是 $0.005/GB。</li>
+<li><strong>请求次数</strong>：BackBlaze 免费送 2500 次请求每天，超过部分是 $0.004 每 1万次请求。</li>
+<li><strong>下行流量</strong>：BackBlaze 和 Cloudflare 之间传输数据时不算流量费用的，而 Cloudflare 的 CDN 又是免费的，只要小于 100 M的文件都可以通过 Cloudflare 的 CDN 免费分发。</li>
+</ul>
+<h2 id="2-将-backblaze-打造为个人图床"><a class="markdownIt-Anchor" href="#2-将-backblaze-打造为个人图床"></a> 2. 将 BackBlaze 打造为个人图床</h2>
+<p>下面开始一步一步讲述一下怎么做：</p>
+<p><strong>2.1 创建存储桶</strong></p>
+<p>先创建一个存储桶，注意将存储桶设置为可以<strong>公开访问</strong>的。</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-11-50-21.png" width="60%"/>
+</div>
+<p>然后再 bucket setting 里面设置一下缓存参数为 <code>&#123;&quot;cache-control&quot;:&quot;max-age=2592000&quot;&#125;</code>，这里我们将最大缓存时间设置为1个月。这样设置好之后 Cloudflare 才能存储 Backblaze 上的文件。</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-11-53-36.png" width="60%"/>
+</div>
+<p>之后进入存储桶详情页，随便上传一个文件，点击文件查看其下载链接：</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-11-56-10.png" width="80%"/>
+</div>
+<p>我们把其域名<code>f000.backblazeb2.com</code>记下来，后面会用上。</p>
+<p><strong>2.2 使用 Cloudflare CDN 分发内容</strong></p>
+<p>在 Cloudflare 的 DNS 管理面板上添加一个 CNAME 记录，把我们的一个二级域名指向 Backblaze 的域名，也就是上面那个<code>f000.backblazeb2.com</code>。注意将自动代理开发，这样 Cloudflare 才会缓存文件。这个例子中我们将<code>backblazeb2.chenyaofo.com</code>指向了<code>f000.backblazeb2.com</code>。</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-12-04-15.png" width="100%"/>
+</div>
+<p>单单只是设置域名别名图片的 url 比较长，还需要包含存储桶的名字。最后我们想搞一个这样的 url <code>image.chenyaofo.com/xx.jpg</code>，这样比较好用，并且即使将来需要迁移图床到其他解决方案也好搞。为了实现这样的访问 url，我们可以利用 Cloudflare 提供的页面转发功能。我们再添加一个 DNS 的 A 记录，将 <code>image.chenyaofo.com</code> 指向 <code>8.8.8.8</code>（其实这里随便填一个ip地址都可以）并设置自动代理转发。</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-15-34-54.png" width="100%"/>
+</div>
+<p>下面转到页面规则，添加两个规则。第1个规则时设置页面缓存的（如下图所示），我们将<code>backblazeb2.chenyaofo.com</code>设置为：缓存级别为缓存所有，边缘缓存的过期时间时一个月，游览器的缓存时间为1天。</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-15-37-14.png" width="80%"/>
+</div>
+<p>然后我们设置一个页面转发规则，将<code>image.chenyaofo.com/*</code>的内容通过 302 临时重定向到<code>https://backblazeb2.chenyaofo.com/file/my-image-host/$1</code>（其中$1就是指代*的内容）。</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-15-39-45.png" width="80%"/>
+</div>
+<p><strong>2.3 使用 ShareX 截图上传</strong></p>
+<p>图床搭建好之后，我们可以使用 ShareX 来截图上传。首先我们在 Backblaze 上创建一个key：</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-15-47-53.png" width="60%"/>
+</div>
+<p>点击确定之后会生成key：</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-15-49-08.png" width="60%"/>
+</div>
+<p>再在 ShareX 的 [目标] -&gt; [上传目标设置] -&gt; [BackBlaze B2] 中，将上面的 key id 和 密码填进去，并且填写 bucket 的名称，以及 url 的前缀：</p>
+<div align="center"> 
+<img src="https://assets.chenyaofo.com/2021-05-31-15-58-50.png" width="80%"/>
+</div>
+<p>至此，我们的图床工作流就已经准备完成了！</p>
+<p><strong>2.4 检查图床是否成功</strong></p>
+<p>通过游览器随便打开一张图床里面的图片，打开游览器的开发者模式。如果在请求头里面看到<code>cf-cache-status: HIT</code>则说明已经成功了，图片是由 Cloudflare 的 CDN 进行分发的。如果看到<code>cf-cache-status: BYPASS</code>，那就要检查一下是否给 Backblaze 的存储桶设置缓存头，其次再检查下有没有在 Cloudflare 的 DNS 中设置自动代理了。</p>
+<h2 id="3-拓展用法"><a class="markdownIt-Anchor" href="#3-拓展用法"></a> 3. 拓展用法</h2>
+<p>其实从上面的描述来看，这套方法不仅能做图床，其实可以白嫖 Backblaze 和 Cloudflare 分发任何小于 100 M的文件。你只需要出存储费用，这个存储费用真的算是很便宜了，即使你存储了 1 TB 的文件，也只需要 $5。缺点就是 Cloudflare 只能缓存 100 M以下的，超过 100 M 的文件会直接通过 ByPass 模式回源；另外 Cloudflare 在国内的延迟有点高，带宽倒是还可以。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oneflow-introduction/" rel="prev" title="初识 Oneflow">
+      <i class="fa fa-chevron-left"></i> 初识 Oneflow
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-backblaze-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text"> 1. BackBlaze 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B0%86-backblaze-%E6%89%93%E9%80%A0%E4%B8%BA%E4%B8%AA%E4%BA%BA%E5%9B%BE%E5%BA%8A"><span class="nav-number">2.</span> <span class="nav-text"> 2. 将 BackBlaze 打造为个人图床</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%8B%93%E5%B1%95%E7%94%A8%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text"> 3. 拓展用法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">陈耀佛</p>
+  <div class="site-description" itemprop="description">个人技术博客分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/chenyaofo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;chenyaofo" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:chenyaofo@gmail.com" title="E-Mail → mailto:chenyaofo@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">陈耀佛</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
